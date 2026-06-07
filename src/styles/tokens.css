@@ -1,0 +1,47 @@
+/* ============================================================
+   ReelPuzzels — design tokens. Neon (default) + Calm theme.
+   Swapped via .stage[data-theme="…"]. Ported verbatim from the
+   design handoff so colors/fonts match the mockup exactly.
+   ============================================================ */
+:root {
+  --r-card: 22px; --r-md: 16px; --r-sm: 12px;
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- THEME: NEON (default) ---------- */
+.stage, .stage[data-theme="neon"] {
+  --bg:#07060F; --app:#0C0A1A; --surface:#15122A; --surface-2:#1C1838; --sand:#211C42;
+  --ink:#F4F1FF; --ink-soft:#B5AEDB; --ink-faint:#7C75A8;
+  --a-primary:#1FE6FF; --a-accent:#FF2E9A; --a-good:#B6FF1A;
+  --a-deep:#9B5CFF; --a-warm:#FF8A1F; --a-amber:#FFE03D;
+  --on-accent:#06121A;
+  --line: rgba(155,140,255,0.18); --line-2: rgba(155,140,255,0.30);
+  --pad0:#1FE6FF; --pad1:#FF2E9A; --pad2:#B6FF1A; --pad3:#9B5CFF;
+  --glow-primary: 0 0 18px color-mix(in srgb, var(--a-primary) 55%, transparent);
+  --glow-accent:  0 0 18px color-mix(in srgb, var(--a-accent) 55%, transparent);
+  --glow-good:    0 0 18px color-mix(in srgb, var(--a-good) 50%, transparent);
+  --stage-glow: 0 0 80px rgba(155,92,255,0.25);
+  --mark-glow: drop-shadow(0 0 8px color-mix(in srgb, var(--a-primary) 60%, transparent));
+  --shadow-card: none;
+  --grid-op: 0.5;
+  --em-shadow: var(--glow-accent);
+}
+/* ---------- THEME: CALM ---------- */
+.stage[data-theme="calm"] {
+  --bg:#EBE1CE; --app:#F1E8D7; --surface:#FBF6EC; --surface-2:#FFFCF4; --sand:#EBDDC2;
+  --ink:#2C271E; --ink-soft:#5A5142; --ink-faint:#8C8068;
+  --a-primary:#6F9E45; --a-accent:#DD7B3F; --a-good:#5E9B39;
+  --a-deep:#3F7A2C; --a-warm:#CC6B2B; --a-amber:#C99230;
+  --on-accent:#FBF6EC;
+  --line:#E6DAC3; --line-2:#D8C8AC;
+  --pad0:#84BE63; --pad1:#EF9356; --pad2:#E7C24A; --pad3:#5FA98A;
+  --glow-primary: 0 6px 16px rgba(92,113,80,0.22);
+  --glow-accent:  0 6px 16px rgba(180,98,56,0.22);
+  --glow-good:    0 6px 16px rgba(92,113,80,0.20);
+  --stage-glow: 0 20px 60px rgba(70,58,38,0.18);
+  --mark-glow: none;
+  --shadow-card: 0 4px 14px rgba(86,72,48,0.07);
+  --grid-op: 0;
+  --em-shadow: none;
+}
