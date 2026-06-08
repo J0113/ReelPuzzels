@@ -27,7 +27,7 @@ export function Onboarding({
         </div>
       </div>
       <div className="onb-copy">
-        <div className="onb-kicker">ReelPuzzels · Brain Reel</div>
+        <div className="onb-kicker">ReelPuzzles · Brain Reel</div>
         <h1 className="onb-title">
           Think it through.
           <br />

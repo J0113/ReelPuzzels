@@ -46,11 +46,7 @@ export function Stats({
       </div>
       <div className="ins-head">
         <div className="ins-kicker">Your run so far</div>
-        <h1 className="ins-title">
-          Your
-          <br />
-          scorecard
-        </h1>
+        <h1 className="ins-title">Your scorecard</h1>
       </div>
 
       <div className="card level-card">

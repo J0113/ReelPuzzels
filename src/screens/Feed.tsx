@@ -16,11 +16,13 @@ export function Feed({
   recordSolve,
   onOpenMenu,
   onOpenStats,
+  paused,
 }: {
   progress: UseProgress["progress"];
   recordSolve: UseProgress["recordSolve"];
   onOpenMenu: () => void;
   onOpenStats: () => void;
+  paused: boolean;
 }) {
   const rng = useRef(new RNG());
   // Ramping reads the solved count at generation time.
@@ -67,10 +69,10 @@ export function Feed({
   // Reset + run the count-UP stopwatch on each unsolved puzzle.
   useEffect(() => setElapsed(0), [index]);
   useEffect(() => {
-    if (isSolved) return;
+    if (isSolved || paused) return;
     const t = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(t);
-  }, [isSolved, index]);
+  }, [isSolved, index, paused]);
 
   function handleSolve() {
     if (solved[cur.id]) return;
@@ -124,7 +126,10 @@ export function Feed({
   }, [instances.length]);
 
   return (
-    <div className="screen">
+    <div
+      className="screen feed-screen"
+      style={paused ? { display: "none" } : undefined}
+    >
       <div className="field-bg" />
       <Hud
         streak={progress.streak}
@@ -149,10 +154,11 @@ export function Feed({
           className="reel-track"
           style={{ transform: `translateY(${-index * 100}%)` }}
         >
-          {instances.map((p) => (
+          {instances.map((p, i) => (
             <PuzzleCard
               key={p.id}
               puzzle={p}
+              active={i === index}
               solved={!!solved[p.id]}
               result={results[p.id] ?? null}
               onSolve={p.id === cur.id ? handleSolve : () => {}}

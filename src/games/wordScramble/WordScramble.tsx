@@ -66,6 +66,7 @@ export function WordScramble({
                 <button
                   key={i}
                   className={"tile" + (usedFrom.includes(i) ? " used" : "")}
+                  disabled={usedFrom.includes(i)}
                   onClick={() => place(ch, i)}
                 >
                   {ch}

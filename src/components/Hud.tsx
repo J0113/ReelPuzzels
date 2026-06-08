@@ -26,24 +26,24 @@ export function Hud({
           <IBrain />
         </span>
         <span className="brand-name">
-          Reel<b>Puzzels</b>
+          Reel<b>Puzzles</b>
         </span>
       </div>
       {elapsed !== null && (
         <div className="hud-chip clock">⏱ {fmt(elapsed)}</div>
       )}
-      <div className="hud-chip streak">
+      <div className="hud-chip streak" aria-label={`Streak: ${streak}`}>
         <IFlame />
         {streak}
       </div>
-      <div className="hud-chip xp">
+      <div className="hud-chip xp" aria-label={`XP: ${xp}`}>
         <IBolt />
         {xp}
       </div>
-      <button className="icon-btn" onClick={onOpenMenu} aria-label="Puzzle menu">
+      <button className="icon-btn" onClick={onOpenMenu} aria-label="Puzzle menu" title="Browse puzzles">
         <IGrid />
       </button>
-      <button className="icon-btn" onClick={onOpenStats} aria-label="Stats">
+      <button className="icon-btn" onClick={onOpenStats} aria-label="Stats" title="Your scorecard">
         <ITrophy />
       </button>
     </div>

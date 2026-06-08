@@ -26,12 +26,13 @@ export function App() {
         />
       )}
 
-      {screen === "feed" && (
+      {(screen === "feed" || screen === "menu" || screen === "stats") && (
         <Feed
           progress={progress}
           recordSolve={recordSolve}
           onOpenMenu={() => setScreen("menu")}
           onOpenStats={() => setScreen("stats")}
+          paused={screen !== "feed"}
         />
       )}
 

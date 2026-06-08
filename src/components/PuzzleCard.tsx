@@ -19,6 +19,7 @@ export function PuzzleCard({
   onSolve,
   onMiss,
   footer,
+  active = true,
 }: {
   puzzle: PuzzleInstance;
   solved: boolean;
@@ -27,6 +28,7 @@ export function PuzzleCard({
   onMiss: () => void;
   /** Rendered inside the solved tray (e.g. a "next" button or swipe cue). */
   footer?: ReactNode;
+  active?: boolean;
 }) {
   const meta = getMode(puzzle.modeId)?.meta;
   const [burst, setBurst] = useState(false);
@@ -40,7 +42,11 @@ export function PuzzleCard({
   }, [solved]);
 
   return (
-    <div className="reel">
+    <div
+      className="reel"
+      aria-hidden={!active}
+      {...(!active ? { inert: "" } : {})}
+    >
       <div className="reel-head">
         <div className="badge-row">
           <span className={"skill-pill" + (meta?.lang ? " lang" : "")}>
@@ -55,12 +61,14 @@ export function PuzzleCard({
         <h1 className="reel-prompt">{puzzle.prompt}</h1>
       </div>
 
-      <PuzzleBody
-        puzzle={puzzle}
-        solved={solved}
-        onSolve={onSolve}
-        onMiss={onMiss}
-      />
+      <div className="reel-center">
+        <PuzzleBody
+          puzzle={puzzle}
+          solved={solved}
+          onSolve={onSolve}
+          onMiss={onMiss}
+        />
+      </div>
 
       {burst && <SolveBurst combo={result?.combo ?? 0} />}
 
