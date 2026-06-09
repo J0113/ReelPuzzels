@@ -2,6 +2,11 @@ import type { Difficulty, GameModule, PuzzleInstance } from "../types";
 import { RNG } from "../lib/rng";
 import { wordScramble } from "./wordScramble";
 import { speedMath } from "./speedMath";
+import { miniSudoku } from "./miniSudoku";
+import { queens } from "./queens";
+import { zip } from "./zip";
+import { tango } from "./tango";
+import { patches } from "./patches";
 
 /**
  * The live set of game modes. To add a mode, create src/games/<mode>/ that
@@ -10,7 +15,15 @@ import { speedMath } from "./speedMath";
  */
 // `any` payload: each module is internally typed, but the registry holds a
 // heterogeneous mix, and GameModule is invariant in its data via Component.
-export const MODES: GameModule<any>[] = [wordScramble, speedMath];
+export const MODES: GameModule<any>[] = [
+  wordScramble,
+  speedMath,
+  miniSudoku,
+  queens,
+  zip,
+  tango,
+  patches,
+];
 
 const BY_ID = new Map(MODES.map((m) => [m.meta.id, m]));
 

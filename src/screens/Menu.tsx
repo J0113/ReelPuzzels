@@ -8,24 +8,30 @@ import {
 import { MODES } from "../games/registry";
 import type { Theme } from "../state/useTheme";
 
+/** Glyph + accent colour for each mode's menu thumbnail. */
+const MODE_ICO: Record<string, { glyph: string; color: string; size?: number }> = {
+  math: { glyph: "5", color: "var(--a-primary)", size: 18 },
+  word: { glyph: "Aa", color: "var(--a-accent)", size: 15 },
+  sudoku: { glyph: "6", color: "var(--a-primary)", size: 18 },
+  queens: { glyph: "♛", color: "var(--a-accent)", size: 19 },
+  zip: { glyph: "1·2", color: "var(--a-deep)", size: 13 },
+  tango: { glyph: "☀☾", color: "var(--a-warm)", size: 14 },
+  patches: { glyph: "▦", color: "var(--a-good)", size: 19 },
+};
+
 /** Small per-mode menu thumbnail. */
 function ModeIco({ id }: { id: string }) {
-  if (id === "math")
-    return (
-      <span style={{ fontWeight: 800, fontSize: 18, color: "var(--a-primary)" }}>
-        5
-      </span>
-    );
+  const ico = MODE_ICO[id] ?? { glyph: "?", color: "var(--ink-soft)", size: 16 };
   return (
     <span
       style={{
         fontWeight: 800,
-        fontSize: 15,
-        color: "var(--a-accent)",
+        fontSize: ico.size ?? 16,
+        color: ico.color,
         letterSpacing: "0.02em",
       }}
     >
-      Aa
+      {ico.glyph}
     </span>
   );
 }

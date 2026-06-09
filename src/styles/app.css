@@ -305,4 +305,65 @@ input { font-family: inherit; }
   .onb-points { margin: 12px 0; }
 }
 
+/* ============================================================
+   GRID PUZZLES — Mini Sudoku / Queens / Zip / Tango / Patches
+   Shared board scaffold; per-mode rules below.
+   ============================================================ */
+.board { position: relative; margin: 0 auto; }
+.bgrid { display: grid; width: min(86vw, 300px); margin: 0 auto; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.bc { position: relative; aspect-ratio: 1; display: grid; place-items: center; font-weight: 800; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.drawgrid { touch-action: none; } /* drag-to-draw modes must not scroll/swipe the reel */
+
+/* number row (Mini Sudoku) */
+.numrow { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.numrow .key { width: 42px; height: 44px; font-size: 20px; }
+
+/* --- Mini Sudoku --- */
+.sudoku .bgrid { gap: 0; border: 2px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--surface-2); }
+.sudoku .bc { border: 1px solid var(--line); font-size: clamp(17px, 6vw, 25px); color: var(--ink); background: var(--surface-2); transition: background 0.12s; }
+.sudoku .bc.given { background: var(--surface); color: var(--ink); }
+.sudoku .bc.user { color: var(--a-primary); }
+.sudoku .bc.sel { background: color-mix(in srgb, var(--a-primary) 24%, var(--surface-2)); }
+.sudoku .bc.bad { color: var(--a-accent); background: color-mix(in srgb, var(--a-accent) 14%, var(--surface-2)); }
+.sudoku .bc.bx { border-right: 2px solid var(--line-2); }
+.sudoku .bc.by { border-bottom: 2px solid var(--line-2); }
+
+/* --- Queens --- */
+.queens .bgrid { gap: 3px; }
+.queens .bc { border-radius: 7px; font-size: clamp(16px, 5.6vw, 26px); color: #161310; transition: transform 0.1s var(--ease); }
+.queens .bc:active { transform: scale(0.9); }
+.queens .qq { color: #161310; }
+.queens .qx { color: rgba(20, 16, 10, 0.5); font-size: 0.6em; }
+
+/* --- Zip --- (cells form the grid; the drawn line is an SVG overlay) */
+.zip .bgrid { gap: 0; border: 1.6px solid var(--line-2); border-radius: 10px; overflow: hidden; position: relative; }
+.zip .bc { border: 1px solid var(--line); background: var(--surface-2); }
+.zip .bc.on { background: color-mix(in srgb, var(--a-primary) 14%, var(--surface-2)); }
+.zip .cpnum { position: relative; z-index: 3; display: grid; place-items: center; width: 66%; height: 66%; border-radius: 50%; background: var(--app); border: 1.6px solid var(--a-deep); color: var(--a-deep); font-weight: 800; font-size: clamp(12px, 3.8vw, 17px); font-variant-numeric: tabular-nums; }
+.zip-line { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+.zip-line polyline { fill: none; stroke: var(--a-primary); stroke-width: 0.34; stroke-linejoin: round; stroke-linecap: round; }
+.zip-line .zip-head { fill: var(--a-primary); }
+
+/* --- Tango --- */
+.tango .bgrid { gap: 5px; }
+.tango .bc { border-radius: 10px; background: var(--surface-2); border: 1.6px solid var(--line); font-size: clamp(19px, 7vw, 30px); transition: background 0.12s; }
+.tango .bc.given { background: var(--surface); border-color: var(--line-2); }
+.tango .bc.sun { color: var(--a-warm); }
+.tango .bc.moon { color: var(--a-primary); }
+.tango .bc.bad { background: color-mix(in srgb, var(--a-accent) 26%, var(--surface-2)); box-shadow: inset 0 0 0 2px var(--a-accent); }
+.tango.err .bgrid { animation: shake 0.4s var(--ease); }
+.tango .cmark { position: absolute; transform: translate(-50%, -50%); width: 19px; height: 19px; border-radius: 50%; background: var(--app); border: 1.6px solid var(--line-2); display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--ink-soft); z-index: 3; pointer-events: none; }
+
+/* --- Patches --- (drag a rectangle around each clue) */
+.patches .bgrid { gap: 0; border-radius: 10px; overflow: hidden; }
+.patches .bc { transition: filter 0.12s; }
+.patches .bc.prev { filter: brightness(1.18) saturate(1.3); box-shadow: inset 0 0 0 2px var(--ink); }
+.clue-chip { position: relative; z-index: 3; display: inline-flex; align-items: center; gap: 2px; padding: 2px 6px; border-radius: 8px; background: var(--app); border: 1.5px solid var(--ink); color: var(--ink); font-weight: 800; line-height: 1; }
+.clue-chip b { font-size: clamp(12px, 3.6vw, 16px); font-variant-numeric: tabular-nums; }
+.clue-chip i { font-style: normal; font-size: clamp(11px, 3.4vw, 15px); }
+.clue-chip .clue-any { opacity: 0.6; }
+
+@media (max-height: 760px) { .bgrid { width: min(82vw, 264px); } .numrow .key { height: 40px; } }
+@media (max-height: 640px) { .bgrid { width: min(78vw, 236px); } }
+
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.08s !important; } }
