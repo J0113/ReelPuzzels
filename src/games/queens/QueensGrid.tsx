@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import type { PuzzleComponentProps } from "../../types";
 import { cellAtPoint } from "../pointer";
-import { EMPTY, MARK, QUEEN, solved as isWin, type QueensData } from "./logic";
+import {
+  EMPTY,
+  MARK,
+  QUEEN,
+  conflicts,
+  solved as isWin,
+  type QueensData,
+} from "./logic";
 
 /** One pastel colour per region, spread around the hue wheel. */
 function regionColors(n: number): string[] {
@@ -30,6 +37,7 @@ export function QueensGrid({
   }, [puzzle.id, n]);
 
   const colors = regionColors(n);
+  const bad = conflicts(state, n, regionOf);
 
   function commit(next: number[]) {
     stateRef.current = next;
@@ -92,7 +100,7 @@ export function QueensGrid({
               <div
                 key={i}
                 data-i={i}
-                className="bc"
+                className={"bc" + (bad[i] ? " bad" : "")}
                 style={{ background: colors[regionOf[i]] }}
                 onPointerDown={() => down(i)}
               >

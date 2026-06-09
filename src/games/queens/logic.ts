@@ -398,6 +398,39 @@ export function generate(
   };
 }
 
+/**
+ * Cells that make the current placement illegal — drives live red highlighting.
+ * A queen is flagged if it shares a row, column or colour region with another
+ * queen, or is adjacent (even diagonally) to one. Only QUEEN cells are flagged.
+ */
+export function conflicts(
+  state: number[],
+  n: number,
+  regionOf: number[],
+): boolean[] {
+  const bad = new Array<boolean>(n * n).fill(false);
+  const qs: number[] = [];
+  for (let i = 0; i < n * n; i++) if (state[i] === QUEEN) qs.push(i);
+  for (const i of qs) {
+    const r = Math.floor(i / n);
+    const c = i % n;
+    for (const j of qs) {
+      if (i === j) continue;
+      const r2 = Math.floor(j / n);
+      const c2 = j % n;
+      if (
+        r === r2 || // same row
+        c === c2 || // same column
+        regionOf[i] === regionOf[j] || // same colour region
+        (Math.abs(r - r2) <= 1 && Math.abs(c - c2) <= 1) // touching
+      ) {
+        bad[i] = bad[j] = true;
+      }
+    }
+  }
+  return bad;
+}
+
 /** Win: one queen per row, column and region, with no two queens touching. */
 export function solved(
   state: number[],

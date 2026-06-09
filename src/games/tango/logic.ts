@@ -164,7 +164,7 @@ export function generate(
     }
 
   const given = new Array<number>(N * N).fill(0);
-  const constraints: Constraint[] = [];
+  let constraints: Constraint[] = [];
   let hidden = rng.shuffle([...Array(N * N).keys()]);
   let pairs = rng.shuffle(allPairs);
   const bias = REVEAL_BIAS[difficulty];
@@ -181,6 +181,19 @@ export function generate(
       constraints.push(pairs[0]);
       pairs = pairs.slice(1);
     }
+  }
+
+  // Greedy add can leave redundant clues. Prune any clue whose removal keeps the
+  // solution unique — relations (= / ✕) first, since those are the visual noise.
+  for (const ct of rng.shuffle([...constraints])) {
+    const trial = constraints.filter((c) => c !== ct);
+    if (countSolutions(given, trial, 2) === 1) constraints = trial;
+  }
+  for (const i of rng.shuffle([...Array(N * N).keys()])) {
+    if (given[i] === 0) continue;
+    const v = given[i];
+    given[i] = 0;
+    if (countSolutions(given, constraints, 2) !== 1) given[i] = v;
   }
 
   return {

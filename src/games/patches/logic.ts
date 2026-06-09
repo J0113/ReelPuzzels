@@ -49,12 +49,18 @@ interface Rect {
   h: number;
 }
 
-/** Recursively (guillotine) cut the grid into rectangles. */
+/**
+ * Recursively (guillotine) cut the grid into rectangles. Single cells (1×1) are
+ * never produced: a width split is only allowed if each side stays tileable
+ * without forcing a 1×1, and likewise for a height split.
+ */
 function carve(n: number, difficulty: Difficulty, rng: RNG): Rect[] {
   const rects: Rect[] = [];
   const rec = (x: number, y: number, w: number, h: number) => {
-    const canV = w >= 2;
-    const canH = h >= 2;
+    // A 1-wide column may only be split in height if both halves stay ≥2 tall
+    // (else we'd make a 1×1); a 1-tall row, symmetrically.
+    const canV = w >= 2 && (h >= 2 || w >= 4);
+    const canH = h >= 2 && (w >= 2 || h >= 4);
     if (
       (!canV && !canH) ||
       (w * h <= MAX_AREA[difficulty] && rng.next() < KEEP[difficulty])
@@ -63,11 +69,11 @@ function carve(n: number, difficulty: Difficulty, rng: RNG): Rect[] {
       return;
     }
     if (canV && (!canH || rng.next() < 0.5)) {
-      const cut = rng.int(1, w - 1);
+      const cut = h >= 2 ? rng.int(1, w - 1) : rng.int(2, w - 2);
       rec(x, y, cut, h);
       rec(x + cut, y, w - cut, h);
     } else {
-      const cut = rng.int(1, h - 1);
+      const cut = w >= 2 ? rng.int(1, h - 1) : rng.int(2, h - 2);
       rec(x, y, w, cut);
       rec(x, y + cut, w, h - cut);
     }
@@ -104,6 +110,7 @@ export function countSolutions(n: number, clues: Clue[], cap: number): number {
       width = Math.min(width, run);
       if (width === 0) break;
       for (let w = 1; w <= width; w++) {
+        if (w === 1 && h === 1) continue; // 1×1 patches are not allowed
         let cc = 0;
         let ci = -1;
         for (let dy = 0; dy < h; dy++)
@@ -212,7 +219,7 @@ export function solved(owner: number[], n: number, clues: Clue[]): boolean {
   for (let i = 0; i < clues.length; i++) {
     const clue = clues[i];
     const { x0, y0, x1, y1, count } = ownedBox(owner, n, i);
-    if (count === 0) return false;
+    if (count < 2) return false; // 1×1 patches are not allowed
     const w = x1 - x0 + 1;
     const h = y1 - y0 + 1;
     if (w * h !== count) return false; // not a solid rectangle
@@ -221,4 +228,31 @@ export function solved(owner: number[], n: number, clues: Clue[]): boolean {
     if (clue.type !== null && shapeType(w, h) !== clue.type) return false;
   }
   return true;
+}
+
+/**
+ * Cells belonging to a shape the player has built wrong — drives live red
+ * highlighting. A shape (≥2 cells) is flagged when it can't satisfy its clue:
+ * it isn't a solid rectangle, it overshoots a known size, or — once solid — its
+ * size/type contradicts the clue. Incomplete (too-small) shapes aren't flagged.
+ */
+export function conflicts(owner: number[], n: number, clues: Clue[]): boolean[] {
+  const bad = new Array<boolean>(n * n).fill(false);
+  for (let i = 0; i < clues.length; i++) {
+    const clue = clues[i];
+    const { x0, y0, x1, y1, count } = ownedBox(owner, n, i);
+    if (count < 2) continue;
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    const solid = w * h === count;
+    let wrong = false;
+    if (!solid) wrong = true; // not a rectangle
+    else {
+      if (clue.size !== null && count > clue.size) wrong = true; // too big
+      if (clue.type !== null && shapeType(w, h) !== clue.type) wrong = true; // wrong form
+    }
+    if (wrong)
+      for (let k = 0; k < n * n; k++) if (owner[k] === i) bad[k] = true;
+  }
+  return bad;
 }

@@ -19,8 +19,8 @@ const PROMPTS = [
   "Trace a path that hits the numbers in sequence.",
 ];
 
-const SIZE: Record<Difficulty, number> = { easy: 5, medium: 6, hard: 7 };
-const CHECKS: Record<Difficulty, number> = { easy: 4, medium: 5, hard: 6 };
+const SIZE: Record<Difficulty, number> = { easy: 5, medium: 7, hard: 8 };
+const CHECKS: Record<Difficulty, number> = { easy: 5, medium: 8, hard: 11 };
 
 /** Orthogonal neighbours of a cell index. */
 export function neighbors(idx: number, n: number): number[] {

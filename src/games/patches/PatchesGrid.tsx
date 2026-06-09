@@ -7,7 +7,12 @@ import {
 } from "react";
 import type { PuzzleComponentProps } from "../../types";
 import { cellAtPoint } from "../pointer";
-import { solved as isWin, type PatchesData, type ShapeType } from "./logic";
+import {
+  conflicts,
+  solved as isWin,
+  type PatchesData,
+  type ShapeType,
+} from "./logic";
 
 const TYPE_GLYPH: Record<ShapeType, string> = {
   square: "◻",
@@ -47,6 +52,7 @@ export function PatchesGrid({
   useEffect(() => setOwner(fresh()), [puzzle.id]);
 
   const hue = (i: number) => Math.round((i * 360) / Math.max(1, clues.length));
+  const bad = conflicts(owner, n, clues);
 
   function commit(next: number[]) {
     setOwner(next);
@@ -102,20 +108,35 @@ export function PatchesGrid({
 
   function cellStyle(i: number): CSSProperties {
     const o = owner[i];
+    const style: CSSProperties = {};
+    if (o < 0) return style; // unclaimed cell: just the dashed base grid
     const r = Math.floor(i / n);
     const c = i % n;
-    const diff = (nr: number, nc: number) =>
-      nr < 0 || nr >= n || nc < 0 || nc >= n || owner[nr * n + nc] !== o;
-    const edge = (on: boolean) =>
-      on ? "2.5px solid var(--ink)" : "2.5px solid transparent";
-    return {
-      background:
-        o >= 0 ? `hsl(${hue(o)} 60% 72%)` : "var(--surface-2)",
-      borderTop: edge(diff(r - 1, c)),
-      borderBottom: edge(diff(r + 1, c)),
-      borderLeft: edge(diff(r, c - 1)),
-      borderRight: edge(diff(r, c + 1)),
-    };
+    const same = (nr: number, nc: number) =>
+      nr >= 0 && nr < n && nc >= 0 && nc < n && owner[nr * n + nc] === o;
+    const top = !same(r - 1, c);
+    const bottom = !same(r + 1, c);
+    const left = !same(r, c - 1);
+    const right = !same(r, c + 1);
+    const flag = bad[i];
+    // Translucent fill so the dashed grid still reads through the patch.
+    style.background = flag
+      ? "hsl(0 75% 60% / 0.32)"
+      : `hsl(${hue(o)} 70% 60% / 0.34)`;
+    // Solid coloured border only on the patch's outer edges (interior edges
+    // keep the dashed base grid). Rounded where two outer edges meet.
+    const col = flag ? "hsl(0 72% 52%)" : `hsl(${hue(o)} 60% 46%)`;
+    const solid = `2.5px solid ${col}`;
+    if (top) style.borderTop = solid;
+    if (bottom) style.borderBottom = solid;
+    if (left) style.borderLeft = solid;
+    if (right) style.borderRight = solid;
+    const rad = "10px";
+    if (top && left) style.borderTopLeftRadius = rad;
+    if (top && right) style.borderTopRightRadius = rad;
+    if (bottom && left) style.borderBottomLeftRadius = rad;
+    if (bottom && right) style.borderBottomRightRadius = rad;
+    return style;
   }
 
   // cell index → clue (for rendering clue chips)
@@ -146,14 +167,13 @@ export function PatchesGrid({
                   style={cellStyle(i)}
                   onPointerDown={() => down(i)}
                 >
-                  {clue && (
-                    <span className="clue-chip">
-                      {clue.size !== null && (
-                        <b>{clue.size}</b>
-                      )}
-                      {clue.type !== null && (
-                        <i>{TYPE_GLYPH[clue.type]}</i>
-                      )}
+                  {clue && ci !== undefined && (
+                    <span
+                      className="clue-chip"
+                      style={{ background: `hsl(${hue(ci)} 62% 44%)` }}
+                    >
+                      {clue.size !== null && <b>{clue.size}</b>}
+                      {clue.type !== null && <i>{TYPE_GLYPH[clue.type]}</i>}
                       {clue.size === null && clue.type === null && (
                         <i className="clue-any">?</i>
                       )}
