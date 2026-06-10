@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import type { PuzzleComponentProps } from "../../types";
 import { cellAtPoint } from "../pointer";
-import { neighbors, solved as isWin, type ZipData } from "./logic";
+import {
+  openNeighbors,
+  pathError,
+  solved as isWin,
+  type ZipData,
+} from "./logic";
 
 export function ZipGrid({
   puzzle,
@@ -9,7 +14,7 @@ export function ZipGrid({
   onSolve,
   onMiss,
 }: PuzzleComponentProps<ZipData>) {
-  const { n, numbers } = puzzle.data;
+  const { n, numbers, walls } = puzzle.data;
   const start = numbers.indexOf(1);
   const [path, setPath] = useState<number[]>(() => [start]);
   const pathRef = useRef(path);
@@ -37,7 +42,7 @@ export function ZipGrid({
     if (at !== -1) {
       commit(p.slice(0, at + 1)); // grab the line at this cell
       drag.current = { moved: false };
-    } else if (neighbors(p[p.length - 1], n).includes(i)) {
+    } else if (openNeighbors(p[p.length - 1], n, walls).includes(i)) {
       commit([...p, i]);
       drag.current = { moved: false };
     } else {
@@ -57,7 +62,7 @@ export function ZipGrid({
     if (p.length >= 2 && j === p[p.length - 2]) {
       commit(p.slice(0, p.length - 1));
       drag.current.moved = true;
-    } else if (p.indexOf(j) === -1 && neighbors(h, n).includes(j)) {
+    } else if (p.indexOf(j) === -1 && openNeighbors(h, n, walls).includes(j)) {
       commit([...p, j]);
       drag.current.moved = true;
     }
@@ -69,6 +74,7 @@ export function ZipGrid({
 
   const head = path[path.length - 1];
   const center = (i: number) => `${(i % n) + 0.5},${Math.floor(i / n) + 0.5}`;
+  const err = pathError(path, n, numbers);
 
   return (
     <>
@@ -100,10 +106,31 @@ export function ZipGrid({
             })}
           </div>
           <svg
-            className="zip-line"
+            className={"zip-line" + (err ? " err" : "")}
             viewBox={`0 0 ${n} ${n}`}
             preserveAspectRatio="none"
           >
+            {walls.map((key) => {
+              const a = Math.floor(key / 10000);
+              const b = key % 10000;
+              const ax = a % n;
+              const ay = Math.floor(a / n);
+              // b is either a+1 (vertical wall) or a+n (horizontal wall).
+              const [x1, y1, x2, y2] =
+                b === a + 1
+                  ? [ax + 1, ay, ax + 1, ay + 1]
+                  : [ax, ay + 1, ax + 1, ay + 1];
+              return (
+                <line
+                  key={key}
+                  className="zip-wall"
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                />
+              );
+            })}
             {path.length > 1 && (
               <polyline points={path.map(center).join(" ")} />
             )}

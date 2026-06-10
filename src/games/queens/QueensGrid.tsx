@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent,
+} from "react";
 import type { PuzzleComponentProps } from "../../types";
 import { cellAtPoint } from "../pointer";
 import {
@@ -38,6 +44,24 @@ export function QueensGrid({
 
   const colors = regionColors(n);
   const bad = conflicts(state, n, regionOf);
+
+  // Thick black edge wherever a cell borders a different region, so the colour
+  // groups read clearly even when adjacent hues are close.
+  function cellStyle(i: number): CSSProperties {
+    const r = Math.floor(i / n);
+    const c = i % n;
+    const reg = regionOf[i];
+    const diff = (nr: number, nc: number) =>
+      nr < 0 || nr >= n || nc < 0 || nc >= n || regionOf[nr * n + nc] !== reg;
+    const edge = "3px solid #161310";
+    return {
+      background: colors[reg],
+      borderTop: diff(r - 1, c) ? edge : undefined,
+      borderBottom: diff(r + 1, c) ? edge : undefined,
+      borderLeft: diff(r, c - 1) ? edge : undefined,
+      borderRight: diff(r, c + 1) ? edge : undefined,
+    };
+  }
 
   function commit(next: number[]) {
     stateRef.current = next;
@@ -101,7 +125,7 @@ export function QueensGrid({
                 key={i}
                 data-i={i}
                 className={"bc" + (bad[i] ? " bad" : "")}
-                style={{ background: colors[regionOf[i]] }}
+                style={cellStyle(i)}
                 onPointerDown={() => down(i)}
               >
                 {v === QUEEN ? (

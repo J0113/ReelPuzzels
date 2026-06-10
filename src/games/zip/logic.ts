@@ -11,6 +11,13 @@ export interface ZipData {
   numbers: number[];
   /** A valid ordered path covering every cell (the generator's solution). */
   solution: number[];
+  /** Blocked edges (the line can't cross them). Each is a `wallKey`. */
+  walls: number[];
+}
+
+/** Canonical key for the wall between two adjacent cells. */
+export function wallKey(a: number, b: number): number {
+  return a < b ? a * 10000 + b : b * 10000 + a;
 }
 
 const PROMPTS = [
@@ -21,6 +28,8 @@ const PROMPTS = [
 
 const SIZE: Record<Difficulty, number> = { easy: 5, medium: 7, hard: 8 };
 const CHECKS: Record<Difficulty, number> = { easy: 5, medium: 8, hard: 11 };
+/** How many blocking walls to drop in (none on easy, many on hard). */
+const WALLS: Record<Difficulty, number> = { easy: 0, medium: 5, hard: 10 };
 
 /** Orthogonal neighbours of a cell index. */
 export function neighbors(idx: number, n: number): number[] {
@@ -32,6 +41,11 @@ export function neighbors(idx: number, n: number): number[] {
   if (c > 0) out.push(idx - 1);
   if (c < n - 1) out.push(idx + 1);
   return out;
+}
+
+/** Orthogonal neighbours reachable without crossing a wall. */
+export function openNeighbors(idx: number, n: number, walls: number[]): number[] {
+  return neighbors(idx, n).filter((j) => !walls.includes(wallKey(idx, j)));
 }
 
 /** Snake path through the whole grid — the seed for randomization. */
@@ -105,6 +119,16 @@ export function generate(
     numbers[path[p]] = i + 1;
   });
 
+  // Walls go only on edges the solution path never uses, so the puzzle stays
+  // solvable; they prune alternate routes (and look like the LinkedIn blockers).
+  const used = new Set<number>();
+  for (let i = 1; i < path.length; i++) used.add(wallKey(path[i - 1], path[i]));
+  const candidates: number[] = [];
+  for (let i = 0; i < total; i++)
+    for (const j of neighbors(i, n))
+      if (i < j && !used.has(wallKey(i, j))) candidates.push(wallKey(i, j));
+  const walls = rng.shuffle(candidates).slice(0, WALLS[difficulty]);
+
   return {
     id: uid("zip"),
     modeId: "zip",
@@ -112,8 +136,25 @@ export function generate(
     prompt: rng.pick(PROMPTS),
     hint: "Start at 1, end at the last number, and cover every cell once.",
     xp: XP_BY_DIFFICULTY[difficulty],
-    data: { n, numbers, solution: path },
+    data: { n, numbers, solution: path, walls },
   };
+}
+
+/**
+ * Should the drawn line read as an error right now? True when checkpoints are
+ * visited out of order (e.g. 1 → 3, skipping 2), or every checkpoint is linked
+ * but the path doesn't yet cover the whole grid.
+ */
+export function pathError(path: number[], n: number, numbers: number[]): boolean {
+  const max = Math.max(0, ...numbers);
+  let expect = 1;
+  for (const x of path)
+    if (numbers[x] > 0) {
+      if (numbers[x] !== expect) return true; // out of order / skipped one
+      expect++;
+    }
+  if (expect - 1 === max && path.length < n * n) return true; // linked but unfilled
+  return false;
 }
 
 /** Win: path covers every cell once, is connected, and hits 1..K in order. */

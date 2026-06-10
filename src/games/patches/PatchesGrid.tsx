@@ -51,7 +51,10 @@ export function PatchesGrid({
 
   useEffect(() => setOwner(fresh()), [puzzle.id]);
 
-  const hue = (i: number) => Math.round((i * 360) / Math.max(1, clues.length));
+  // Offset off 0° so no shape lands on pure red — keeps region colours clearly
+  // distinct from the red error highlight.
+  const hue = (i: number) =>
+    Math.round(25 + (i * 320) / Math.max(1, clues.length));
   const bad = conflicts(owner, n, clues);
 
   function commit(next: number[]) {
@@ -94,8 +97,13 @@ export function PatchesGrid({
       const inside = clues
         .map((c, i) => (cells.includes(c.cell) ? i : -1))
         .filter((i) => i >= 0);
-      if (inside.length === 1) {
-        const c = inside[0];
+      // Legal only if the box holds exactly one clue and steals no cell already
+      // claimed by another shape. Reject illegal drags outright (no overlaps, no
+      // error state) instead of overwriting.
+      const c = inside.length === 1 ? inside[0] : -1;
+      const legal =
+        c >= 0 && cells.every((k) => owner[k] < 0 || owner[k] === c);
+      if (legal) {
         const next = owner.slice();
         for (let k = 0; k < next.length; k++) if (next[k] === c) next[k] = -1;
         for (const k of cells) next[k] = c;

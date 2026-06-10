@@ -19,14 +19,23 @@ export function TangoGrid({
 }: PuzzleComponentProps<TangoData>) {
   const { given, constraints } = puzzle.data;
   const [cells, setCells] = useState<number[]>(() => given.slice());
+  // Lagged copy: conflicts only highlight 3s after the last move, so a cell
+  // mid-cycle (empty → sun → moon needs two taps) isn't flagged immediately.
+  const [shown, setShown] = useState<number[]>(() => given.slice());
   const [wrong, setWrong] = useState(false);
 
   useEffect(() => {
     setCells(given.slice());
+    setShown(given.slice());
     setWrong(false);
   }, [puzzle.id]);
 
-  const bad = conflicts(cells, constraints);
+  useEffect(() => {
+    const t = setTimeout(() => setShown(cells), 3000);
+    return () => clearTimeout(t);
+  }, [cells]);
+
+  const bad = conflicts(shown, constraints);
 
   function tap(i: number) {
     if (isSolved || given[i] !== 0) return;

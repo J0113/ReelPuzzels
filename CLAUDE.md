@@ -148,11 +148,11 @@ Ported from the design handoff, split into:
   column count is the only inline style on `.bgrid`. Region colours (queens/patches) are
   inline, not tokens.
 
-Layout is **full-bleed at every width**: `.stage` fills the viewport, the HUD (absolute,
-`left:0/right:0`) spans full width — logo far left, chips + buttons far right — while each
-screen's play content sits in a centered column (`.reel` / `.solo-body` ≤472px, `.menu` /
-`.insights` ≤680px). On a phone the column is just 100% wide. The wordmark is hidden in
-`.feed-screen` so the HUD chips fit the stage.
+Layout is **full-bleed on every screen**: `.stage` fills the viewport (themed backdrop, no
+floating card) and the HUD (absolute, `left:0/right:0`) spans full width — logo far left,
+chips + buttons far right. Each screen's content stays a centered column (`.reel` /
+`.solo-body` / `.onb` ≤472px, `.menu` / `.insights` ≤680px; 100% wide on a phone) so nothing
+stretches edge-to-edge. The wordmark is hidden in `.feed-screen` so the HUD chips fit.
 
 Font: Space Grotesk via `<link>` in `index.html`.
 
