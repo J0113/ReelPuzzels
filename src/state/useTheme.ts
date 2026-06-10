@@ -11,6 +11,8 @@ export function useTheme(): [Theme, (t: Theme) => void] {
   );
   useEffect(() => {
     localStorage.setItem(KEY, theme);
+    // Mirror onto <html> so the full-viewport backdrop can be themed too.
+    document.documentElement.dataset.theme = theme;
   }, [theme]);
   return [theme, setTheme];
 }

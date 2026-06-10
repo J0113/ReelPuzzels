@@ -82,7 +82,18 @@ export function Feed({
   }
 
   // --- touch / mouse / wheel navigation (ported from the mockup) ---
+  // Gestures that begin on the puzzle itself (a board, a control) must drive the
+  // puzzle, not the reel — otherwise dragging to draw/tap a cell flips the page.
+  function fromPuzzle(e: React.MouseEvent | React.TouchEvent) {
+    return !!(e.target as HTMLElement).closest(
+      ".bgrid, .drawgrid, .reel-input, .reel-stage, button, input, textarea, a",
+    );
+  }
   function onDown(e: React.MouseEvent | React.TouchEvent) {
+    if (fromPuzzle(e)) {
+      drag.current.active = false;
+      return;
+    }
     const y = "touches" in e ? e.touches[0].clientY : e.clientY;
     drag.current = { active: true, startY: y, dy: 0 };
   }
@@ -102,8 +113,11 @@ export function Feed({
     const dy = drag.current.dy;
     drag.current.active = false;
     if (trackRef.current) {
+      // Restore the index-correct transform (not ""): if this gesture doesn't
+      // cross the threshold below, go() never fires, so React never re-renders
+      // to re-apply the style — leaving the track on a blank (hidden) reel.
       trackRef.current.style.transition = "";
-      trackRef.current.style.transform = "";
+      trackRef.current.style.transform = `translateY(${-index * 100}%)`;
     }
     if (dy < -70) go(index + 1);
     else if (dy > 70) go(index - 1);

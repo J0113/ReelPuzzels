@@ -24,7 +24,11 @@ games-handoff.zip`) — the mockup was visual reference only; all game logic her
 
 - **Feed** (`src/screens/Feed.tsx`) — endless reel. Puzzles appended on demand (no fixed
   list, no progress dots). Difficulty **ramps** with `solvedCount` (`rampDifficulty` in the
-  registry). Swipe / wheel / drag navigation ported from the mockup.
+  registry). Swipe / wheel / drag navigation ported from the mockup. The drag
+  handler ignores gestures that start on a board or control (`fromPuzzle` guard)
+  so playing a mode never flips the reel; on release it restores the
+  index-correct `translateY` transform (clearing it would strand the track on a
+  hidden reel = a blank page).
 - **SingleGame** (`src/screens/SingleGame.tsx`) — practice one mode. Pick easy/medium/hard,
   play one puzzle at a time via a "Next puzzle" button. **No infinite scroll.**
 - **Menu / Onboarding / Stats** — `src/screens/`. Stats are derived from real progress.
@@ -135,13 +139,20 @@ by mode id (solve counts), driving the Stats "skill power" bars.
 
 Ported from the design handoff, split into:
 - `src/styles/tokens.css` — design tokens + both themes (`.stage[data-theme="neon|calm"]`),
-  verbatim so colors/fonts match the mockup.
+  verbatim so colors/fonts match the mockup. `useTheme` also mirrors `data-theme` onto
+  `<html>` so the full-viewport backdrop (`body` bg) matches the active theme.
 - `src/styles/app.css` — layout + components. The live speed meter was pruned (out of
   scope). The five grid modes share a `.board` / `.bgrid` / `.bc` scaffold near the bottom
   of the file, with per-mode rules under `.sudoku` / `.queens` / `.zip` / `.tango` /
   `.patches`. Boards size off `min(86vw, 300px)` (shrinks via `max-height` queries); the
   column count is the only inline style on `.bgrid`. Region colours (queens/patches) are
   inline, not tokens.
+
+Layout is **full-bleed at every width**: `.stage` fills the viewport, the HUD (absolute,
+`left:0/right:0`) spans full width — logo far left, chips + buttons far right — while each
+screen's play content sits in a centered column (`.reel` / `.solo-body` ≤472px, `.menu` /
+`.insights` ≤680px). On a phone the column is just 100% wide. The wordmark is hidden in
+`.feed-screen` so the HUD chips fit the stage.
 
 Font: Space Grotesk via `<link>` in `index.html`.
 
